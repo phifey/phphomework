@@ -1,8 +1,16 @@
 <?php
+	if(isset($_GET['Success']))
+	{
+		echo $_GET['Success'];
+	}
+	if(isset($_GET['Failure']))
+	{
+		echo $_GET['Failure'];
+	}
 	
 	include 'conn.php';			//connects to the database
 
-	$stmt = $conn->prepare("SELECT event_id,event_name,event_description,event_presenter FROM wdv341_event");
+	$stmt = $conn->prepare("SELECT event_id,event_name,event_description,event_presenter FROM wdv341_events");
 	$stmt->execute();
 ?>
 <table border='1'>
