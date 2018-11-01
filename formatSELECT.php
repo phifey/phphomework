@@ -35,6 +35,7 @@
 			<?php 
 			
 			try {
+	date_default_timezone_set('America/Chicago');
 	$cur_month = date('m');
 	$cur_day = date('d');
 	$cur_year = date('Y');
@@ -72,6 +73,7 @@ catch(PDOException $e)
 {
 	echo $e->getMessage();
 }
+			
 			?>
 				</aside>
 			</div>
