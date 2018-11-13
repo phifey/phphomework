@@ -58,14 +58,18 @@ class User
 	
 	public function updateUser()
 	{
-		
+		if($this->_updateUserRow())
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	public function deleteUser()
 	{
 		if($this->_deleteUserRow())
 		{
-			$this->_successMsg = "<p style='color: black'>Row successfully updated to the database</p>";
+			$this->_successMsg = "<p style='color: black'>Row successfully deleted from the database</p>";
 			return true;
 		}
 		$this->_error = true;
@@ -90,17 +94,20 @@ class User
 	
 	protected function _fetchUserTable()
 	{
-		$stmt = $this->_db->prepare("SELECT * FROM event_user");
+		$stmt = $this->_db->prepare("SELECT * FROM wdv341_event");
 		$stmt->execute();
 		if($stmt->rowCount() >= 1)
 		{
+			$styles = "style='color:white; border: 1px solid white; padding-left: 1rem; padding-right: 1rem;'";
 			while ($row = $stmt->fetch(PDO::FETCH_ASSOC))
 			{
 				echo "<tr>";
-					echo "<td style='color:white'>" . $row['event_user_name'] . "</td>";
-					echo "<td style='color:white'>" . $row['event_user_password'] . "</td>";	
-					echo "<td><a href='updateEvent.php?eventID=" . $row['event_user_id'] . "'>Update</a></td>"; 
-					echo "<td><a href='deleteEvent.php?eventID=" . $row['event_user_id'] . "'>Delete</a></td>"; 		
+					echo "<td $styles>" . $row['event_name'] . "</td>";
+					echo "<td $styles>" . $row['event_description'] . "</td>";	
+					echo "<td $styles>" . $row['event_presenter'] . "</td>";	
+					echo "<td $styles>" . $row['event_date'] . "</td>";	
+					echo "<td $styles><a href='updateEvent.php?eventID=" . $row['event_id'] . "'>Update</a></td>"; 
+					echo "<td $styles><a href='deleteEvent.php?eventID=" . $row['event_id'] . "'>Delete</a></td>"; 		
 				echo "</tr>";
 			}
 			return true;
@@ -114,7 +121,7 @@ class User
 			$id = $_GET['eventID'];
 			$filterID = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
 			
-			$stmt = $conn->prepare("DELETE FROM event_user WHERE event_user_id = :id");
+			$stmt = $this->_db->prepare("DELETE FROM wdv341_event WHERE event_id = :id");
 			$stmt->bindParam(':id', $filterID, PDO::PARAM_INT);
 			$stmt->execute();
 			if($stmt->rowCount() > 0)
@@ -123,6 +130,41 @@ class User
 			}
 			else {
 				return false;
+			}
+		}
+		catch(PDOException $e)
+		{
+			echo $e->getMessage();
+		}
+	}
+	
+	protected function _updateUserRow()
+	{
+		try {
+			$id = $_GET['eventID'];
+			$set_presenter = $_SESSION['presenter_name'];
+			$filterID = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
+			$filterName = filter_var($set_presenter, FILTER_SANITIZE_STRING);
+			if($_SESSION['presenter_name'] == "")
+			{
+				$this->_error = true;
+				$this->_errorMsg = "<p style='color:black'>Please enter a new presenter name to update!</p>";
+				return false;
+			}
+			else {
+				$stmt = $this->_db->prepare("UPDATE wdv341_event SET event_presenter = '$filterName' WHERE event_id = :id");
+				$stmt->bindParam(':id', $filterID, PDO::PARAM_INT);
+				$stmt->execute();
+				if($stmt->rowCount() > 0)
+				{
+					$this->_successMsg = "<p style='color: black'>Row successfully updated to the database</p>";
+					return true;
+				}
+				else {
+					$this->_error = true;
+					$this->_errorMsg = "<p style='color:black'>Something unexpected went wrong! Please try again.</p>";
+					return false;
+				}
 			}
 		}
 		catch(PDOException $e)
